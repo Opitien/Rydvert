@@ -72,7 +72,7 @@ export function WaitlistProvider({ children }: { children: ReactNode }) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-[440px] max-h-[90vh] overflow-y-auto bg-[#0a0a0a] border border-white/[0.08] rounded-[24px] shadow-2xl p-6 md:p-8 custom-scrollbar"
+              className="relative w-full max-w-[500px] max-h-[90vh] overflow-y-auto bg-[#0a0a0a] border border-white/[0.08] rounded-[24px] shadow-2xl p-6 md:p-8 custom-scrollbar"
             >
               <button
                 onClick={closeWaitlist}

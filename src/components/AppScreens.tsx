@@ -29,7 +29,7 @@ function CreateScreen() {
   return (
     <div className="h-full flex flex-col p-4">
       <div className="flex items-center justify-between mb-5">
-        <span className="text-white font-bold text-sm">New Campaign</span>
+        <span className="text-white font-bold text-sm pt-1">New Campaign</span>
         <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
           <Plus size={12} className="text-white/40" />
         </div>
@@ -38,9 +38,9 @@ function CreateScreen() {
       {/* Ad preview thumbnail */}
       <div className="w-full aspect-video bg-black rounded-xl border border-white/[0.07] flex items-center justify-center mb-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 50% 50%, #02E965, transparent 70%)" }} />
-        <div className="text-center z-10">
-          <div className="text-white font-black text-lg leading-none">YOUR</div>
-          <div className="text-rydvert-green font-black text-lg leading-none">BRAND</div>
+        <div className="text-center z-10 pt-2">
+          <div className="text-white font-black text-lg leading-none pt-1">YOUR</div>
+          <div className="text-rydvert-green font-black text-lg leading-none pt-1">BRAND</div>
         </div>
         <div className="absolute bottom-2 right-2 bg-rydvert-green text-black text-[8px] font-black px-2 py-0.5 rounded">PREVIEW</div>
       </div>
@@ -80,7 +80,7 @@ function AnalyticsScreen() {
   return (
     <div className="h-full flex flex-col p-4">
       <div className="flex items-center justify-between mb-5">
-        <span className="text-white font-bold text-sm">Campaign</span>
+        <span className="text-white font-bold text-sm pt-1">Campaign</span>
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-rydvert-green animate-pulse" />
           <span className="text-rydvert-green text-[10px] font-bold">Active</span>
@@ -142,7 +142,7 @@ export function AppScreens() {
           </p>
         </div>
 
-        <div className="flex gap-8 overflow-x-auto pb-4 lg:justify-center">
+        <div className="flex gap-8 overflow-x-auto pb-8 pt-8 lg:justify-center cursor-e-resize lg:cursor-auto custom-scrollbar">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
