@@ -1,12 +1,14 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { X, Loader2, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+type Preference = "Advertise my business" | "Become a vehicle partner";
+
 type WaitlistContextType = {
   isOpen: boolean;
-  openWaitlist: (preference?: "Advertise my business" | "Become a vehicle partner") => void;
+  openWaitlist: (preference?: Preference) => void;
   closeWaitlist: () => void;
 };
 
@@ -14,33 +16,35 @@ const WaitlistContext = createContext<WaitlistContextType | undefined>(undefined
 
 export function useWaitlist() {
   const context = useContext(WaitlistContext);
-  if (!context) {
-    throw new Error("useWaitlist must be used within a WaitlistProvider");
-  }
+  if (!context) throw new Error("useWaitlist must be used within a WaitlistProvider");
   return context;
 }
 
 export function WaitlistProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [preference, setPreference] = useState<"Advertise my business" | "Become a vehicle partner">("Advertise my business");
-  
+  const [preference, setPreference] = useState<Preference>("Advertise my business");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
-  const openWaitlist = (pref?: "Advertise my business" | "Become a vehicle partner") => {
+  const openWaitlist = (pref?: Preference) => {
     if (pref) setPreference(pref);
     setIsOpen(true);
     setStatus("idle");
   };
-
   const closeWaitlist = () => setIsOpen(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeWaitlist();
+    };
+    if (isOpen) document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
-    // Simulate API call
-    setTimeout(() => {
-      setStatus("success");
-    }, 1500);
+    await new Promise((r) => setTimeout(r, 1400));
+    setStatus("success");
   };
 
   return (
@@ -48,101 +52,135 @@ export function WaitlistProvider({ children }: { children: ReactNode }) {
       {children}
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40 backdrop-blur-sm">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0"
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
               onClick={closeWaitlist}
             />
+
+            {/* Modal */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-[440px] max-h-[90vh] overflow-y-auto bg-[#0a0a0a] border border-white/[0.08] rounded-[24px] shadow-2xl p-6 md:p-8 custom-scrollbar"
             >
               <button
                 onClick={closeWaitlist}
-                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-black transition-colors rounded-full hover:bg-gray-100"
+                className="absolute top-6 right-6 w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/30 transition-colors"
                 aria-label="Close"
               >
-                <X size={20} />
+                <X size={14} />
               </button>
 
-              <div className="p-8">
-                {status === "success" ? (
-                  <div className="text-center py-8">
-                    <div className="mx-auto w-16 h-16 bg-rydvert-green/10 text-rydvert-green rounded-full flex items-center justify-center mb-6">
-                      <CheckCircle2 size={32} />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-2">You're on the list.</h3>
-                    <p className="text-gray-600">We'll let you know when Rydvert is ready.</p>
-                    <button
-                      onClick={closeWaitlist}
-                      className="mt-8 w-full py-3 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors"
-                    >
-                      Close
-                    </button>
+              {status === "success" ? (
+                <div className="text-center py-6">
+                  <div className="mx-auto w-16 h-16 bg-rydvert-green/10 text-rydvert-green rounded-full flex items-center justify-center mb-6">
+                    <CheckCircle2 size={32} />
                   </div>
-                ) : (
-                  <>
-                    <h3 className="text-2xl font-bold mb-1">Coming soon.</h3>
-                    <p className="text-gray-600 mb-8">Be first to know when Rydvert launches.</p>
+                  <h3 className="text-2xl font-black text-white mb-3 uppercase">You're on the list.</h3>
+                  <p className="text-white/40 text-sm leading-relaxed">We'll let you know when Rydvert is ready.</p>
+                  <button
+                    onClick={closeWaitlist}
+                    className="mt-8 w-full py-4 bg-rydvert-green text-black rounded-xl font-black hover:bg-white transition-colors uppercase tracking-wide text-sm"
+                  >
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-6">
+                    <p className="text-rydvert-green text-[10px] font-black tracking-widest uppercase mb-1">Coming soon</p>
+                    <h3 className="text-2xl font-black text-white uppercase leading-tight tracking-tight">Be first to know.</h3>
+                    <p className="text-white/40 mt-2 text-sm leading-relaxed pr-6">Join the waitlist and we'll notify you the moment Rydvert launches.</p>
+                  </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
-                        <input required type="text" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rydvert-green focus:border-transparent transition-all" placeholder="Jane Doe" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
-                        <input required type="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rydvert-green focus:border-transparent transition-all" placeholder="jane@example.com" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Business name (Optional)</label>
-                        <input type="text" className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rydvert-green focus:border-transparent transition-all" placeholder="Company Inc." />
-                      </div>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-black text-white/40 uppercase tracking-wider mb-2">
+                        Full name
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        className="w-full px-4 py-2.5 rounded-xl bg-[#111] border border-white/[0.05] text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-colors text-sm"
+                        placeholder="Jane Doe"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-white/40 uppercase tracking-wider mb-2">
+                        Email address
+                      </label>
+                      <input
+                        required
+                        type="email"
+                        className="w-full px-4 py-2.5 rounded-xl bg-[#111] border border-white/[0.05] text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-colors text-sm"
+                        placeholder="jane@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-white/40 uppercase tracking-wider mb-2">
+                        Business name <span className="lowercase font-normal tracking-normal">(optional)</span>
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2.5 rounded-xl bg-[#111] border border-white/[0.05] text-white placeholder-white/20 focus:outline-none focus:border-white/20 transition-colors text-sm"
+                        placeholder="Company Inc."
+                      />
+                    </div>
 
-                      <div className="pt-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">I want to...</label>
-                        <div className="space-y-2">
-                          <label className="flex items-center p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
+                    <div className="pt-2">
+                      <label className="block text-[10px] font-black text-white/40 uppercase tracking-wider mb-3">
+                        I want to...
+                      </label>
+                      <div className="space-y-2">
+                        {(["Advertise my business", "Become a vehicle partner"] as Preference[]).map((opt) => (
+                          <label
+                            key={opt}
+                            className={`flex items-center gap-3.5 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
+                              preference === opt
+                                ? "border-rydvert-green bg-rydvert-green/[0.03] text-white"
+                                : "border-white/[0.05] bg-[#111] text-white/60 hover:border-white/10"
+                            }`}
+                          >
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors ${
+                              preference === opt ? "border-rydvert-green" : "border-white/20"
+                            }`}>
+                              {preference === opt && <div className="w-2 h-2 rounded-full bg-rydvert-green" />}
+                            </div>
                             <input
                               type="radio"
-                              name="preference"
-                              value="Advertise my business"
-                              checked={preference === "Advertise my business"}
-                              onChange={() => setPreference("Advertise my business")}
-                              className="w-4 h-4 text-rydvert-green focus:ring-rydvert-green border-gray-300"
+                              name="wl-preference"
+                              value={opt}
+                              checked={preference === opt}
+                              onChange={() => setPreference(opt)}
+                              className="sr-only"
                             />
-                            <span className="ml-3 font-medium text-gray-900">Advertise my business</span>
+                            <span className="text-sm font-medium">{opt}</span>
                           </label>
-                          <label className="flex items-center p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
-                            <input
-                              type="radio"
-                              name="preference"
-                              value="Become a vehicle partner"
-                              checked={preference === "Become a vehicle partner"}
-                              onChange={() => setPreference("Become a vehicle partner")}
-                              className="w-4 h-4 text-rydvert-green focus:ring-rydvert-green border-gray-300"
-                            />
-                            <span className="ml-3 font-medium text-gray-900">Become a vehicle partner</span>
-                          </label>
-                        </div>
+                        ))}
                       </div>
+                    </div>
 
-                      <button
-                        type="submit"
-                        disabled={status === "loading"}
-                        className="w-full mt-6 py-4 bg-rydvert-green text-black rounded-full font-bold text-lg hover:bg-[#02d15a] transition-all disabled:opacity-70 flex items-center justify-center shadow-lg shadow-rydvert-green/20"
-                      >
-                        {status === "loading" ? <Loader2 className="animate-spin" /> : "Join the waitlist"}
-                      </button>
-                    </form>
-                  </>
-                )}
-              </div>
+                    <button
+                      type="submit"
+                      disabled={status === "loading"}
+                      className="w-full mt-4 py-4 bg-rydvert-green text-black rounded-xl font-black text-sm hover:bg-white transition-all disabled:opacity-60 flex items-center justify-center gap-2 uppercase tracking-wide"
+                    >
+                      {status === "loading" ? <Loader2 className="animate-spin" size={20} /> : "Join the waitlist"}
+                    </button>
+                  </form>
+                </>
+              )}
             </motion.div>
           </div>
         )}
