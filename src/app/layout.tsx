@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     siteName: "Rydvert",
     images: [
       {
-        url: "/vechile.jpg",
+        url: "/social-image.jpeg",
         width: 1200,
         height: 630,
         alt: "Rydvert Mobile Advertising",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Rydvert | Advertise on the move.",
     description: "Turn everyday journeys into high-impact advertising opportunities. Rydvert brings your brand to the streets.",
-    images: ["/vechile.jpg"],
+    images: ["/social-image.jpeg"],
     creator: "@rydvert",
   },
   robots: {
